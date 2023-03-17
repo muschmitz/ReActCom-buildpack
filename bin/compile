@@ -3,18 +3,7 @@ set -euo pipefail
 
 BUILD_DIR=$1
 CACHE_DIR=$2
-export BUILDPACK_DIR=`dirname $(readlink -f ${BASH_SOURCE%/*})`
-export DEPS_DIR="$BUILD_DIR/.cloudfoundry"
-mkdir -p "$DEPS_DIR/0"
-mkdir -p "$BUILD_DIR/.profile.d"
-echo "export DEPS_DIR=\$HOME/.cloudfoundry" > "$BUILD_DIR/.profile.d/0000_set-deps-dir.sh"
 
-$BUILDPACK_DIR/bin/supply "$BUILD_DIR" "$CACHE_DIR" "$DEPS_DIR" 0
-$BUILDPACK_DIR/bin/finalize "$BUILD_DIR" "$CACHE_DIR" "$DEPS_DIR" 0
-
-echo "-----> Install ffmpeg"
-
-BUILD_DIR=$1
 VENDOR_DIR="vendor"
 DOWNLOAD_URL="https://github.com/craftsmen/heroku-ffmpeg-lame-bin/archive/1.0.0.tar.gz"
 
@@ -31,3 +20,14 @@ PROFILE_PATH="$BUILD_DIR/.profile.d/ffmpeg-lame.sh"
 mkdir -p $(dirname $PROFILE_PATH)
 echo 'export PATH="$PATH:vendor/ffmpeg/bin:vendor/lame/bin"' >> $PROFILE_PATH
 echo 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:vendor/ffmpeg/lib:vendor/lame/lib"' >> $PROFILE_PATH
+
+export BUILDPACK_DIR=`dirname $(readlink -f ${BASH_SOURCE%/*})`
+export DEPS_DIR="$BUILD_DIR/.cloudfoundry"
+mkdir -p "$DEPS_DIR/0"
+mkdir -p "$BUILD_DIR/.profile.d"
+echo "export DEPS_DIR=\$HOME/.cloudfoundry" > "$BUILD_DIR/.profile.d/0000_set-deps-dir.sh"
+
+$BUILDPACK_DIR/bin/supply "$BUILD_DIR" "$CACHE_DIR" "$DEPS_DIR" 0
+$BUILDPACK_DIR/bin/finalize "$BUILD_DIR" "$CACHE_DIR" "$DEPS_DIR" 0
+
+echo "-----> Install ffmpeg"
