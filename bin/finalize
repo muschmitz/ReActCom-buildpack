@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+indent() {
+  sed -u 's/^/       /'
+}
+
 BUILD_DIR=$1
 CACHE_DIR=$2
 DEPS_DIR=$3
@@ -17,4 +21,23 @@ GOROOT=$GoInstallDir $GoInstallDir/bin/go build -mod=vendor -o $output_dir/final
 popd
 
 $output_dir/finalize "$BUILD_DIR" "$CACHE_DIR" "$DEPS_DIR" "$DEPS_IDX" "$PROFILE_DIR"
+
+echo "-----> Install ffmpeg"
+
+VENDOR_DIR="vendor"
+DOWNLOAD_URL="https://github.com/craftsmen/heroku-ffmpeg-lame-bin/archive/1.0.0.tar.gz"
+
+echo "DOWNLOAD_URL = " $DOWNLOAD_URL | indent
+
+cd $BUILD_DIR
+mkdir -p $VENDOR_DIR
+cd $VENDOR_DIR
+curl -L --silent $DOWNLOAD_URL | tar xz --strip-components=1
+
+echo "exporting PATH and LIBRARY_PATH" | indent
+
+PROFILE_PATH="$BUILD_DIR/.profile.d/ffmpeg-lame.sh"
+mkdir -p $(dirname $PROFILE_PATH)
+echo 'export PATH="$PATH:vendor/ffmpeg/bin:vendor/lame/bin"' >> $PROFILE_PATH
+echo 'export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:vendor/ffmpeg/lib:vendor/lame/lib"' >> $PROFILE_PATH
 
